@@ -19,8 +19,12 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
-    public Producto actualizarProducto(Producto producto) {
-        return productoRepository.save(producto);
+    public Producto actualizarProducto(Long id, Producto productoDetalles) {
+        if (productoRepository.existsById(id)) {
+            productoDetalles.setId(id);
+            return productoRepository.save(productoDetalles);
+        }
+        return null;
     }
 
     public boolean eliminarProducto(Long id) {

@@ -54,11 +54,15 @@ public class ProductoController {
     }
 
     // Para actualizar un producto
-    @PutMapping
-    public ResponseEntity<Producto> actualizarProducto(@RequestBody Producto producto) {
+    @PutMapping("/{id}") 
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
         try {
-            Producto productoActualizado = productoService.actualizarProducto(producto);
-            return new ResponseEntity<>(productoActualizado, HttpStatus.OK);
+            Producto productoActualizado = productoService.actualizarProducto(id, producto);
+            if (productoActualizado != null) {
+                return new ResponseEntity<>(productoActualizado, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
