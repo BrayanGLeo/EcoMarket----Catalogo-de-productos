@@ -38,7 +38,7 @@ public class ProductoService {
     public List<Producto> buscarTodos() {
         return productoRepository.findAll();
     }
-
+    
     public Optional<Producto> buscarPorId(Long id) {
         return productoRepository.findById(id);
     }
