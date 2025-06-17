@@ -3,23 +3,37 @@ package com.EcoMarket.Producto.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.stereotype.Service;
 
 import com.EcoMarket.Producto.model.Producto;
 import com.EcoMarket.Producto.repository.ProductoRepository;
 
 @Service
-public class ProductoService {
+public class ProductoServiceTest {
 
-    @Autowired
-    private static ProductoRepository productoRepository;
+    @Mock
+    private ProductoRepository productoRepository;
+
+    @InjectMocks
+    private ProductoService productoService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
     
-    public static Producto crearProducto(Producto producto) {
+    @Test
+    public Producto testcrearProducto(Producto producto) {
         return productoRepository.save(producto);
     }
 
-    public Producto actualizarProducto(Long id, Producto productoDetalles) {
+    @Test
+    public Producto testactualizarProducto(Long id, Producto productoDetalles) {
         if (productoRepository.existsById(id)) {
             productoDetalles.setId(id);
             return productoRepository.save(productoDetalles);
@@ -27,7 +41,8 @@ public class ProductoService {
         return null;
     }
 
-    public boolean eliminarProducto(Long id) {
+    @Test
+    public boolean testeliminarProducto(Long id) {
         if (productoRepository.existsById(id)) {
             productoRepository.deleteById(id);
             return true;
@@ -35,11 +50,13 @@ public class ProductoService {
         return false;
     }
 
-    public List<Producto> buscarTodos() {
+    @Test
+    public List<Producto> testbuscarTodos() {
         return productoRepository.findAll();
     }
     
-    public Optional<Producto> buscarPorId(Long id) {
+    @Test
+    public Optional<Producto> testbuscarPorId(Long id) {
         return productoRepository.findById(id);
     }
 }
