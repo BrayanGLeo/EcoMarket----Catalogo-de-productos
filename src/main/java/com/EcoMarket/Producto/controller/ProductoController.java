@@ -28,7 +28,7 @@ public class ProductoController {
     @PostMapping
     public ResponseEntity<Producto> postProducto(@RequestBody Producto producto) {
         try {
-            Producto nuevoProducto = ProductoService.crearProducto(producto);
+            Producto nuevoProducto = productoService.crearProducto(producto);
             return new ResponseEntity<>(nuevoProducto, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -54,7 +54,7 @@ public class ProductoController {
     }
 
     // Para actualizar un producto
-    @PutMapping("/{id}") 
+    @PutMapping("/{id}")
     public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
         try {
             Producto productoActualizado = productoService.actualizarProducto(id, producto);

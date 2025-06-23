@@ -1,31 +1,28 @@
 package com.EcoMarket.Producto.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.EcoMarket.Producto.model.Producto;
 import com.EcoMarket.Producto.service.ProductoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RestController
 @WebMvcTest(ProductoController.class)
-@RequestMapping("/api/productos")
 public class ProductoControllerTest {
 
     @Autowired
@@ -37,64 +34,106 @@ public class ProductoControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // Para crear un producto
-    @Test
-    @PostMapping
-    public ResponseEntity<Producto> testpostProducto(@RequestBody Producto producto) {
-        try {
-            Producto nuevoProducto = ProductoService.crearProducto(producto);
-            return new ResponseEntity<>(nuevoProducto, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
+    private Producto producto;
+    private Producto productoActualizado;
+
+    @BeforeEach
+    void setUp() {
+        producto = new Producto(1L, "Coca Cola 2L", "Coca Cola botella desechable de 2L", 1890.00, 30, "Bebestibles");
+        productoActualizado = new Producto(1L, "Coca Cola 2L Retornable", "Coca Cola botella retornable de 2L", 1490.00,
+                50, "Bebestibles");
     }
 
-    // Para obtener todos los productos
     @Test
-    @GetMapping
-    public ResponseEntity<List<Producto>> testbuscarTodosLosProductos() {
-        List<Producto> productos = productoService.buscarTodos();
-        return new ResponseEntity<>(productos, HttpStatus.OK);
+    void testPostProducto() throws Exception {
+        when(productoService.crearProducto(any(Producto.class))).thenReturn(producto);
+
+        mockMvc.perform(post("/api/productos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(producto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.nombre").value("Coca Cola 2L"))
+                .andExpect(jsonPath("$.precio").value(1890.00));
     }
 
-    // Para obtener un producto por ID
     @Test
-    @GetMapping("/{id}")
-    public ResponseEntity<Producto> testbuscarProductoPorId(@PathVariable Long id) {
-        Optional<Producto> productoOpt = productoService.buscarPorId(id);
-        if (productoOpt.isPresent()) {
-            return new ResponseEntity<>(productoOpt.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    void testPostProducto_ConErrorDeServicio() throws Exception {
+        when(productoService.crearProducto(any(Producto.class))).thenThrow(new RuntimeException());
+
+        mockMvc.perform(post("/api/productos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(producto)))
+                .andExpect(status().isConflict());
     }
 
-    // Para actualizar un producto
     @Test
-    @PutMapping("/{id}") 
-    public ResponseEntity<Producto> testactualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
-        try {
-            Producto productoActualizado = productoService.actualizarProducto(id, producto);
-            if (productoActualizado != null) {
-                return new ResponseEntity<>(productoActualizado, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    void testBuscarTodosLosProductos() throws Exception {
+        Producto producto2 = new Producto(2L, "Bebida Mas 1.5L", "Bebida Mas botella de 1.5L", 1190.00, 50,
+                "Bebestibles");
+        List<Producto> listaProductos = Arrays.asList(producto, producto2);
+        when(productoService.buscarTodos()).thenReturn(listaProductos);
+
+        mockMvc.perform(get("/api/productos"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].nombre").value("Coca Cola 2L"))
+                .andExpect(jsonPath("$[1].nombre").value("Bebida Mas 1.5L"));
     }
 
-    // Para eliminar un producto
     @Test
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> testeliminarProducto(@PathVariable Long id) {
-        boolean fueEliminado = productoService.eliminarProducto(id);
-        if (fueEliminado) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    void testBuscarProductoPorId_Encontrado() throws Exception {
+        when(productoService.buscarPorId(1L)).thenReturn(Optional.of(producto));
+
+        mockMvc.perform(get("/api/productos/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.nombre").value("Coca Cola 2L"));
     }
 
+    @Test
+    void testBuscarProductoPorId_NoEncontrado() throws Exception {
+        when(productoService.buscarPorId(1L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/productos/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testActualizarProducto_Exitoso() throws Exception {
+        when(productoService.actualizarProducto(eq(1L), any(Producto.class))).thenReturn(productoActualizado);
+
+        mockMvc.perform(put("/api/productos/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(productoActualizado)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Coca Cola 2L Retornable"))
+                .andExpect(jsonPath("$.precio").value(1490.00));
+    }
+
+    @Test
+    void testActualizarProducto_NoEncontrado() throws Exception {
+        when(productoService.actualizarProducto(eq(1L), any(Producto.class))).thenReturn(null);
+
+        mockMvc.perform(put("/api/productos/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(productoActualizado)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testEliminarProducto_Exitoso() throws Exception {
+        when(productoService.eliminarProducto(1L)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/productos/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testEliminarProducto_NoEncontrado() throws Exception {
+        when(productoService.eliminarProducto(1L)).thenReturn(false);
+
+        mockMvc.perform(delete("/api/productos/1"))
+                .andExpect(status().isNotFound());
+    }
 }

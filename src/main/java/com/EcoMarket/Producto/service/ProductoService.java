@@ -13,9 +13,9 @@ import com.EcoMarket.Producto.repository.ProductoRepository;
 public class ProductoService {
 
     @Autowired
-    private static ProductoRepository productoRepository;
-    
-    public static Producto crearProducto(Producto producto) {
+    private ProductoRepository productoRepository;
+
+    public Producto crearProducto(Producto producto) {
         return productoRepository.save(producto);
     }
 
@@ -38,7 +38,7 @@ public class ProductoService {
     public List<Producto> buscarTodos() {
         return productoRepository.findAll();
     }
-    
+
     public Optional<Producto> buscarPorId(Long id) {
         return productoRepository.findById(id);
     }
