@@ -59,7 +59,7 @@ public class ProductoServiceTest {
         Producto productoActualizado = productoService.actualizarProducto(1L, productoDetalles);
         assertNotNull(productoActualizado);
         assertEquals(1L, productoActualizado.getId()); // El ID debe ser el original
-        assertEquals("Laptop Pro", productoActualizado.getNombre());
+        assertEquals("Azucar flor nueva", productoActualizado.getNombre());
         verify(productoRepository, times(1)).existsById(1L);
         verify(productoRepository, times(1)).save(productoDetalles);
     }
