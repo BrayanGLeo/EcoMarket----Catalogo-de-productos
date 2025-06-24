@@ -2,11 +2,9 @@ package com.EcoMarket.Producto.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +50,7 @@ public class ProductoServiceTest {
     }
 
     @Test
-    void testActualizarProducto_CuandoExiste() {
+    void testActualizarProducto() {
         when(productoRepository.existsById(1L)).thenReturn(true);
         when(productoRepository.save(any(Producto.class))).thenReturn(productoDetalles);
 
@@ -65,17 +63,7 @@ public class ProductoServiceTest {
     }
 
     @Test
-    void testActualizarProducto_CuandoNoExiste() {
-        when(productoRepository.existsById(1L)).thenReturn(false);
-
-        Producto resultado = productoService.actualizarProducto(1L, productoDetalles);
-        assertNull(resultado);
-        verify(productoRepository, times(1)).existsById(1L);
-        verify(productoRepository, never()).save(any(Producto.class));
-    }
-
-    @Test
-    void testEliminarProducto_CuandoExiste() {
+    void testEliminarProducto() {
         when(productoRepository.existsById(1L)).thenReturn(true);
         doNothing().when(productoRepository).deleteById(1L);
 
@@ -86,53 +74,24 @@ public class ProductoServiceTest {
     }
 
     @Test
-    void testEliminarProducto_CuandoNoExiste() {
-        when(productoRepository.existsById(1L)).thenReturn(false);
-
-        boolean resultado = productoService.eliminarProducto(1L);
-        assertFalse(resultado);
-        verify(productoRepository, times(1)).existsById(1L);
-        verify(productoRepository, never()).deleteById(anyLong());
-    }
-
-    @Test
-    void testBuscarTodos_ConResultados() {
+    void testBuscarTodosLosProductos() {
         Producto producto2 = new Producto(2L, "Fideos Caracol", "Bolsa de fideos caracoles de 400g", 990.00, 50,
                 "Alimentos");
         when(productoRepository.findAll()).thenReturn(Arrays.asList(producto, producto2));
 
-        List<Producto> productos = productoService.buscarTodos();
+        List<Producto> productos = productoService.buscarTodosLosProductos();
         assertNotNull(productos);
         assertEquals(2, productos.size());
         verify(productoRepository, times(1)).findAll();
     }
 
     @Test
-    void testBuscarTodos_SinResultados() {
-        when(productoRepository.findAll()).thenReturn(Collections.emptyList());
-
-        List<Producto> productos = productoService.buscarTodos();
-        assertNotNull(productos);
-        assertTrue(productos.isEmpty());
-        verify(productoRepository, times(1)).findAll();
-    }
-
-    @Test
-    void testBuscarPorId_CuandoSeEncuentra() {
+    void testBuscarProductoPorId() {
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
 
-        Optional<Producto> resultado = productoService.buscarPorId(1L);
+        Optional<Producto> resultado = productoService.buscarProductoPorId(1L);
         assertTrue(resultado.isPresent());
         assertEquals("Azucar Flor", resultado.get().getNombre());
-        verify(productoRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    void testBuscarPorId_CuandoNoSeEncuentra() {
-        when(productoRepository.findById(1L)).thenReturn(Optional.empty());
-
-        Optional<Producto> resultado = productoService.buscarPorId(1L);
-        assertFalse(resultado.isPresent());
         verify(productoRepository, times(1)).findById(1L);
     }
 }

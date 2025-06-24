@@ -12,9 +12,9 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,7 +28,7 @@ public class ProductoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private ProductoService productoService;
 
     @Autowired
@@ -45,7 +45,7 @@ public class ProductoControllerTest {
     }
 
     @Test
-    void testPostProducto() throws Exception {
+    void testCrearProducto() throws Exception {
         when(productoService.crearProducto(any(Producto.class))).thenReturn(producto);
 
         mockMvc.perform(post("/api/productos")
@@ -57,7 +57,7 @@ public class ProductoControllerTest {
     }
 
     @Test
-    void testPostProducto_ConErrorDeServicio() throws Exception {
+    void testCrearProducto_ConErrorDeServicio() throws Exception {
         when(productoService.crearProducto(any(Producto.class))).thenThrow(new RuntimeException());
 
         mockMvc.perform(post("/api/productos")
@@ -71,7 +71,7 @@ public class ProductoControllerTest {
         Producto producto2 = new Producto(2L, "Bebida Mas 1.5L", "Bebida Mas botella de 1.5L", 1190.00, 50,
                 "Bebestibles");
         List<Producto> listaProductos = Arrays.asList(producto, producto2);
-        when(productoService.buscarTodos()).thenReturn(listaProductos);
+        when(productoService.buscarTodosLosProductos()).thenReturn(listaProductos);
 
         mockMvc.perform(get("/api/productos"))
                 .andExpect(status().isOk())
@@ -83,7 +83,7 @@ public class ProductoControllerTest {
 
     @Test
     void testBuscarProductoPorId_Encontrado() throws Exception {
-        when(productoService.buscarPorId(1L)).thenReturn(Optional.of(producto));
+        when(productoService.buscarProductoPorId(1L)).thenReturn(Optional.of(producto));
 
         mockMvc.perform(get("/api/productos/1"))
                 .andExpect(status().isOk())
@@ -93,7 +93,7 @@ public class ProductoControllerTest {
 
     @Test
     void testBuscarProductoPorId_NoEncontrado() throws Exception {
-        when(productoService.buscarPorId(1L)).thenReturn(Optional.empty());
+        when(productoService.buscarProductoPorId(1L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/productos/1"))
                 .andExpect(status().isNotFound());

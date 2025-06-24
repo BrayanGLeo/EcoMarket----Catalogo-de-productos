@@ -35,11 +35,11 @@ public class ProductoService {
         return false;
     }
 
-    public List<Producto> buscarTodos() {
+    public List<Producto> buscarTodosLosProductos() {
         return productoRepository.findAll();
     }
 
-    public Optional<Producto> buscarPorId(Long id) {
+    public Optional<Producto> buscarProductoPorId(Long id) {
         return productoRepository.findById(id);
     }
 }

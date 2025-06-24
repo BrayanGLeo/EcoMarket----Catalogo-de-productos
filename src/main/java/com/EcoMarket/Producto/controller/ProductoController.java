@@ -26,7 +26,7 @@ public class ProductoController {
 
     // Para crear un producto
     @PostMapping
-    public ResponseEntity<Producto> postProducto(@RequestBody Producto producto) {
+    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
         try {
             Producto nuevoProducto = productoService.crearProducto(producto);
             return new ResponseEntity<>(nuevoProducto, HttpStatus.CREATED);
@@ -38,14 +38,14 @@ public class ProductoController {
     // Para obtener todos los productos
     @GetMapping
     public ResponseEntity<List<Producto>> buscarTodosLosProductos() {
-        List<Producto> productos = productoService.buscarTodos();
+        List<Producto> productos = productoService.buscarTodosLosProductos();
         return new ResponseEntity<>(productos, HttpStatus.OK);
     }
 
     // Para obtener un producto por ID
     @GetMapping("/{id}")
     public ResponseEntity<Producto> buscarProductoPorId(@PathVariable Long id) {
-        Optional<Producto> productoOpt = productoService.buscarPorId(id);
+        Optional<Producto> productoOpt = productoService.buscarProductoPorId(id);
         if (productoOpt.isPresent()) {
             return new ResponseEntity<>(productoOpt.get(), HttpStatus.OK);
         } else {
