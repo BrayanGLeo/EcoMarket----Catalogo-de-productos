@@ -31,7 +31,7 @@ public class ProductoServiceTest {
     private Producto producto;
     private Producto productoDetalles;
 
-    @BeforeEach
+    @BeforeEach  
     void setUp() {
         MockitoAnnotations.openMocks(this);
         producto = new Producto(1L, "Azucar flor", "Bolsa de azucar flor de 1kg", 990.00, 10, "Alimentos");
@@ -56,7 +56,7 @@ public class ProductoServiceTest {
 
         Producto productoActualizado = productoService.actualizarProducto(1L, productoDetalles);
         assertNotNull(productoActualizado);
-        assertEquals(1L, productoActualizado.getId()); // El ID debe ser el original
+        assertEquals(1L, productoActualizado.getId());
         assertEquals("Azucar flor nueva", productoActualizado.getNombre());
         verify(productoRepository, times(1)).existsById(1L);
         verify(productoRepository, times(1)).save(productoDetalles);
