@@ -91,7 +91,7 @@ public class ProductoServiceTest {
 
         Optional<Producto> resultado = productoService.buscarProductoPorId(1L);
         assertTrue(resultado.isPresent());
-        assertEquals("Azucar Flor", resultado.get().getNombre());
+        assertEquals("Azucar flor", resultado.get().getNombre());
         verify(productoRepository, times(1)).findById(1L);
     }
 }
