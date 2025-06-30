@@ -51,7 +51,7 @@ public class ProductoController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        List<EntityModel<Producto>> productoResources = productos.stream()
+        List<EntityModel<Producto>> productoRecursos = productos.stream()
                 .map(producto -> {
                     addSelfLink(producto);
                     return EntityModel.of(producto);
@@ -59,7 +59,7 @@ public class ProductoController {
                 .collect(Collectors.toList());
 
         WebMvcLinkBuilder linkBuilder = linkTo(methodOn(ProductoController.class).buscarTodosLosProductos());
-        CollectionModel<EntityModel<Producto>> recurso = CollectionModel.of(productoResources, linkBuilder.withSelfRel());
+        CollectionModel<EntityModel<Producto>> recurso = CollectionModel.of(productoRecursos, linkBuilder.withSelfRel());
 
         return new ResponseEntity<>(recurso, HttpStatus.OK);
     }
