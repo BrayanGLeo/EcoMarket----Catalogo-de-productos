@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -75,10 +77,18 @@ public class ProductoControllerTest {
 
         mockMvc.perform(get("/api/productos"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].nombre").value("Coca Cola 2L"))
-                .andExpect(jsonPath("$[1].nombre").value("Bebida Mas 1.5L"));
+                .andExpect(jsonPath("$._embedded.productoList[0].nombre").value("Coca Cola 2L"))
+                .andExpect(jsonPath("$._embedded.productoList[1].nombre").value("Bebida Mas 1.5L"));
+    }
+
+    @Test
+    void testBuscarTodosLosProductos_Vacio() throws Exception {
+        when(productoService.buscarTodosLosProductos()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/productos"))
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -119,6 +129,16 @@ public class ProductoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(productoActualizado)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testActualizarProducto_ErrorDeServicio() throws Exception {
+        when(productoService.actualizarProducto(eq(1L), any(Producto.class))).thenThrow(new RuntimeException());
+
+        mockMvc.perform(put("/api/productos/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(productoActualizado)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

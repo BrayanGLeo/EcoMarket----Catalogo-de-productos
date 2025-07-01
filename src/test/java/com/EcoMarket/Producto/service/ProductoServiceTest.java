@@ -63,6 +63,15 @@ public class ProductoServiceTest {
     }
 
     @Test
+    void testActualizarProducto_NoExistente() {
+        when(productoRepository.existsById(1L)).thenReturn(false);
+        Producto resultado = productoService.actualizarProducto(1L, productoDetalles);
+        assertNull(resultado);
+        verify(productoRepository, times(1)).existsById(1L);
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
     void testEliminarProducto() {
         when(productoRepository.existsById(1L)).thenReturn(true);
         doNothing().when(productoRepository).deleteById(1L);
@@ -71,6 +80,15 @@ public class ProductoServiceTest {
         assertTrue(resultado);
         verify(productoRepository, times(1)).existsById(1L);
         verify(productoRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testEliminarProducto_NoExistente() {
+        when(productoRepository.existsById(1L)).thenReturn(false);
+        boolean resultado = productoService.eliminarProducto(1L);
+        assertFalse(resultado);
+        verify(productoRepository, times(1)).existsById(1L);
+        verify(productoRepository, never()).deleteById(1L);
     }
 
     @Test
