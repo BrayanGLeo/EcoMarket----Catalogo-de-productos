@@ -1,13 +1,14 @@
 package com.EcoMarket.Producto.controller;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,10 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.EcoMarket.Producto.assemblers.ProductoModelAssembler;
 import com.EcoMarket.Producto.model.Producto;
 import com.EcoMarket.Producto.service.ProductoService;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -30,14 +30,16 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
+    @Autowired
+    private ProductoModelAssembler productoModelAssembler;
+
     // Para crear un producto
     @PostMapping
     public ResponseEntity<EntityModel<Producto>> crearProducto(@RequestBody Producto producto) {
         try {
             Producto nuevoProducto = productoService.crearProducto(producto);
-            addSelfLink(nuevoProducto);
-            EntityModel<Producto> recurso = EntityModel.of(nuevoProducto);
-            return new ResponseEntity<>(recurso, HttpStatus.CREATED);
+            EntityModel<Producto> entityModel = productoModelAssembler.toModel(nuevoProducto);
+            return new ResponseEntity<>(entityModel, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
@@ -52,41 +54,33 @@ public class ProductoController {
         }
 
         List<EntityModel<Producto>> productoRecursos = productos.stream()
-                .map(producto -> {
-                    addSelfLink(producto);
-                    return EntityModel.of(producto);
-                })
+                .map(productoModelAssembler::toModel)
                 .collect(Collectors.toList());
 
-        WebMvcLinkBuilder linkBuilder = linkTo(methodOn(ProductoController.class).buscarTodosLosProductos());
-        CollectionModel<EntityModel<Producto>> recurso = CollectionModel.of(productoRecursos, linkBuilder.withSelfRel());
+        CollectionModel<EntityModel<Producto>> collectionModel = CollectionModel.of(productoRecursos,
+                linkTo(methodOn(ProductoController.class).buscarTodosLosProductos()).withSelfRel());
 
-        return new ResponseEntity<>(recurso, HttpStatus.OK);
+        return new ResponseEntity<>(collectionModel, HttpStatus.OK);
     }
 
     // Para obtener un producto por ID
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Producto>> buscarProductoPorId(@PathVariable Long id) {
-        Optional<Producto> productoOpt = productoService.buscarProductoPorId(id);
-        if (productoOpt.isPresent()) {
-            Producto producto = productoOpt.get();
-            addSelfLinkAndCollectionLink(producto);
-            EntityModel<Producto> recurso = EntityModel.of(producto);
-            return new ResponseEntity<>(recurso, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return productoService.buscarProductoPorId(id)
+                .map(productoModelAssembler::toModel)
+                .map(ResponseEntity::ok)
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     // Para actualizar un producto
     @PutMapping("/{id}")
-    public ResponseEntity<EntityModel<Producto>> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
+    public ResponseEntity<EntityModel<Producto>> actualizarProducto(@PathVariable Long id,
+            @RequestBody Producto producto) {
         try {
             Producto productoActualizado = productoService.actualizarProducto(id, producto);
             if (productoActualizado != null) {
-                addSelfLinkAndCollectionLink(productoActualizado);
-                EntityModel<Producto> recurso = EntityModel.of(productoActualizado);
-                return new ResponseEntity<>(recurso, HttpStatus.OK);
+                EntityModel<Producto> entityModel = productoModelAssembler.toModel(productoActualizado);
+                return new ResponseEntity<>(entityModel, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -105,14 +99,4 @@ public class ProductoController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    private void addSelfLink(Producto producto) {
-        producto.add(linkTo(methodOn(ProductoController.class).buscarProductoPorId(producto.getId())).withSelfRel());
-    }
-
-    private void addSelfLinkAndCollectionLink(Producto producto) {
-        addSelfLink(producto);
-        producto.add(linkTo(methodOn(ProductoController.class).buscarTodosLosProductos()).withRel("todos-los-productos"));
-    }
-
 }
