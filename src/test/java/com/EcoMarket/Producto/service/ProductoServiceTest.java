@@ -10,22 +10,20 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.EcoMarket.Producto.model.Producto;
 import com.EcoMarket.Producto.repository.ProductoRepository;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 public class ProductoServiceTest {
 
-    @Mock
+    @MockBean
     private ProductoRepository productoRepository;
 
-    @InjectMocks
+    @Autowired
     private ProductoService productoService;
 
     private Producto producto;
@@ -33,7 +31,6 @@ public class ProductoServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         producto = new Producto(1L, "Azucar flor", "Bolsa de azucar flor de 1kg", 990.00, 10, "Alimentos");
         productoDetalles = new Producto(1L, "Azucar flor nueva", "Bolsa de azucar flor de 1.2 kg", 1300.00, 80,
                 "Alimentos");
