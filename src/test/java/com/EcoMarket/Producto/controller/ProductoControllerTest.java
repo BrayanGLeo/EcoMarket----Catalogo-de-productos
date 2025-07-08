@@ -16,15 +16,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.EcoMarket.Producto.assemblers.ProductoModelAssembler;
 import com.EcoMarket.Producto.model.Producto;
 import com.EcoMarket.Producto.service.ProductoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(ProductoController.class)
+@Import(ProductoModelAssembler.class)
 public class ProductoControllerTest {
 
     @Autowired
@@ -54,8 +57,11 @@ public class ProductoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(producto)))
                 .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$.nombre").value("Coca Cola 2L"))
-                .andExpect(jsonPath("$.precio").value(1890.00));
+                .andExpect(jsonPath("$.precio").value(1890.00))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.productos.href").exists());
     }
 
     @Test
@@ -78,9 +84,10 @@ public class ProductoControllerTest {
         mockMvc.perform(get("/api/productos"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$._embedded.productoList[0].nombre").value("Coca Cola 2L"))
-                .andExpect(jsonPath("$._embedded.productoList[1].nombre").value("Bebida Mas 1.5L"));
+                .andExpect(jsonPath("$._embedded.productoList[1].nombre").value("Bebida Mas 1.5L"))
+                .andExpect(jsonPath("$._embedded.productoList[0]._links.self.href").exists())
+                .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test
@@ -97,8 +104,10 @@ public class ProductoControllerTest {
 
         mockMvc.perform(get("/api/productos/1"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.nombre").value("Coca Cola 2L"));
+                .andExpect(jsonPath("$.nombre").value("Coca Cola 2L"))
+                .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test
@@ -117,8 +126,10 @@ public class ProductoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(productoActualizado)))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$.nombre").value("Coca Cola 2L Retornable"))
-                .andExpect(jsonPath("$.precio").value(1490.00));
+                .andExpect(jsonPath("$.precio").value(1490.00))
+                .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test

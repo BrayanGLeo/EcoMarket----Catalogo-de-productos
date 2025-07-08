@@ -31,7 +31,7 @@ public class ProductoServiceTest {
     private Producto producto;
     private Producto productoDetalles;
 
-    @BeforeEach  
+    @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         producto = new Producto(1L, "Azucar flor", "Bolsa de azucar flor de 1kg", 990.00, 10, "Alimentos");
